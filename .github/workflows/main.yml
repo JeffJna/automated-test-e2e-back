@@ -1,0 +1,53 @@
+name: Jefferson Almeida - Extractta
+on: [push, pull_request]
+jobs:
+  cypress-run:
+    name: Run Cypress tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout ✔️
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies ⌛
+        run: npm ci
+
+      - name: Cypress run 🚀
+        uses: cypress-io/github-action@v4
+        with:
+          record: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Cypress screenshots
+        uses: actions/upload-artifact@v2
+        continue-on-error: true
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - name: Upload Cypress videos
+        uses: actions/upload-artifact@v2
+        continue-on-error: true
+        with:
+          name: cypress-videos
+          path: cypress/videos
+       - name: Generate Mochawesome Report
+      if: always() # Gera o relatório mesmo se o passo anterior falhar
+      run: npx mochawesome-merge "cypress/reports/mocha/*.json" > mochawesome.json && npx marge mochawesome.json
+
+    - name: Upload Test Report Artifact
+      uses: actions/upload-artifact@v2
+      if: always() # Sempre executa para garantir que o relatório seja carregado, mesmo se os testes falharem
+      with:
+        name: cypress-reports
+        path: mochawesome.json
