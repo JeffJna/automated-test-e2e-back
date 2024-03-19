@@ -1,25 +1,30 @@
-name: Cypress Tests
-on: [push]
+name: AGI - Testing - Blog
+on:
+  push:
 jobs:
   cypress-run:
+    name: Run Cypress tests
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false 
       matrix:
-        containers: [1, 2] 
-     steps:
-
-       - name: Checkout ✔️
+        node-version: [16.x]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout ✔️
         uses: actions/checkout@v2
 
-        - name: Install dependencies ⌛
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies ⌛
         run: npm ci
 
       - name: Cypress run 🚀
         uses: cypress-io/github-action@v4
         with:
           record: true
-          parallel: true 
         env:
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
