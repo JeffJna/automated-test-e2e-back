@@ -1,4 +1,4 @@
-name: AGI - Testing - Blog
+name: Jefferson - Extractta Test
 on:
   push:
 jobs:
